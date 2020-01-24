@@ -1,0 +1,60 @@
+# NASA Image of the Day
+(
+  GET https://apod.nasa.gov/apod/archivepix.html
+  PARSE 'body > b > a' ATTR='href' MAX=10
+).map(
+  GET https://apod.nasa.gov/apod/{{ value }}
+  PARSE 'img[src^="image"]' ATTR='src'
+  TAG 'post'
+).map(
+  DOWNLOAD 'https://apod.nasa.gov/apod/{{ value }}'
+  TAG 'image'
+)
+
+
+# Gallery Post Page
+(
+  INPUT 'title'
+).map(
+  GET "http://increment-gallery-site.com/{title}/gallery-page/{{'+' 1 index }}.html"
+  PARSE 'li > a' ATTR='href'
+).takeUntil('failed-request').map(
+  GET 'http://increment-gallery-site.com{{ value }}'
+  TAG 'image-page'
+).branch(
+  (
+    PARSE '#tags > li'
+    TAG 'tag'
+  ),
+  (
+    PARSE 'img' ATTR='src'
+  ).map(
+    GET 'http://increment-gallery-site.com{{ value }}' READ=false WRITE=true
+    TAG 'image'
+  )
+)
+
+
+# Recursive Pages
+(
+  GET 'http://scrape-next-site.com/index.html'
+).reduce(
+  PARSE '#batch-id'
+  GET 'http://scrape-next-site.com/batch-id-page/id-{{ value }}.html'
+).map(
+  PARSE 'li > a' ATTR='href'
+).map(
+  GET 'http://scrape-next-site.com{{ value }}'
+  TAG 'image-page'
+).branch(
+  (
+    PARSE '#tags > li'
+    TAG 'tag'
+  ),
+  (
+    PARSE 'img' ATTR='src'
+  ).map(
+    GET 'http://scrape-next-site.com{{ value }}' READ=false WRITE=true
+    TAG 'image'
+  )
+)

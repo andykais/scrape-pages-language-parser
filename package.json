@@ -1,0 +1,17 @@
+{
+  "name": "scrape-pages-parser",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "develop": "pnpm run compile:grammar && pnpm run test",
+    "compile:grammar": "nearleyc grammar.ne -o grammar.js",
+    "test": "node parse"
+  },
+  "keywords": [],
+  "author": "Andrew Kaiser",
+  "license": "MIT",
+  "dependencies": {
+    "nearley": "^2.19.1"
+  }
+}
