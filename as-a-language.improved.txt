@@ -1,0 +1,117 @@
+# this is pretty nice, but theres still questions to be asked.
+# do we ever want to go anything but DOWNLOAD THEN PARSE?
+# will we ever take a downloaded value and pass it directly to a request?
+# will we ever go parse then parse?
+# if not, there may be use in coupling download and parse more, there may not though, since branch is a good
+#reason to not call parse immediately after download
+
+# NASA Image of the Day
+(
+  GET https://apod.nasa.gov/apod/archivepix.html
+  PARSE 'body > b > a' ATTR='href' MAX=10
+  GET https://apod.nasa.gov/apod/{{ value }}
+  PARSE 'img[src^="image"]' ATTR='src'
+  TAG 'post'
+  DOWNLOAD 'https://apod.nasa.gov/apod/{{ value }}' WRITE=true READ=false
+  TAG 'image'
+)
+
+
+
+# Gallery Post Page
+(
+  INPUT 'title'
+  GET 'http://increment-gallery-site.com/{title}/gallery-page/{{"+" 1 index }}.html'
+  PARSE 'li > a' ATTR='href'
+).takeUntil(FAILED_DOWNLOAD).map(
+  GET 'http://increment-gallery-site.com{{ value }}'
+  TAG 'image-page'
+).branch(
+  (
+    PARSE '#tags > li'
+    TAG 'tag'
+  ),
+  (
+    PARSE 'img' ATTR='src'
+    GET 'http://increment-gallery-site.com{{ value }}' READ=false WRITE=true
+    TAG 'image'
+  )
+)
+
+# V2
+# adding commands conditionally inside certain blocks is weird (break on its own is more like programming languages though)
+INPUT 'title'
+().loop(
+  GET "http://increment-gallery-site.com/{title}/gallery-page/{{'+' 1 index }}.html"
+  BREAK IF BAD_REQUEST
+  PARSE 'li > a' ATTR='href' THROW_IF_EMPTY=true
+  BREAK IF EMPTY
+).map(
+  GET 'http://increment-gallery-site.com{{ value }}'
+  TAG 'image-page'
+).branch(
+  (
+    PARSE '#tags > li'
+    TAG 'tag'
+  ),
+  (
+    PARSE 'img' ATTR='src'
+    GET 'http://increment-gallery-site.com{{ value }}' READ=false WRITE=true
+    TAG 'image'
+  )
+)
+
+().loop(
+  GET "http://increment-gallery-site.com/{title}/gallery-page/{{'+' 1 index }}.html"
+  BREAK IF BAD_REQUEST
+  PARSE 'li > a' ATTR='href'
+  BREAK IF EMPTY
+)
+
+().loopUntilFailure(
+  GET "http://increment-gallery-site.com/{title}/gallery-page/{{'+' 1 index }}.html" ALLOW_FAILURES=false
+  PARSE 'li > a' ATTR='href' ALLOW_EMPTY_PARSE=false
+
+  BREAK ON ERROR
+)
+
+().loop(
+  GET "http://increment-gallery-site.com/{title}/gallery-page/{{'+' 1 index }}.html" ALLOW_FAILURES=false
+  PARSE 'li > a' ATTR='href' ALLOW_EMPTY_PARSE=false
+).until(FAILURE)
+
+().loop(
+  GET "http://increment-gallery-site.com/{title}/gallery-page/{{'+' 1 index }}.html" ALLOW_FAILURES=false
+  PARSE 'li > a' ATTR='href' ALLOW_EMPTY_PARSE=false
+).until(index == 5)
+
+
+# Recursive Pages
+(
+  GET 'http://scrape-next-site.com/index.html'
+).reduce(
+  PARSE '#batch-id'
+  GET 'http://scrape-next-site.com/batch-id-page/id-{{ value }}.html'
+).takeUntil(EMPTY_PARSE).map(
+  PARSE 'li > a' ATTR='href'
+  GET 'http://scrape-next-site.com{{ value }}'
+  TAG 'image-page'
+).branch(
+  (
+    PARSE '#tags > li'
+    TAG 'tag'
+  ),
+  (
+    PARSE 'img' ATTR='src'
+    GET 'http://scrape-next-site.com{{ value }}' READ=false WRITE=true
+    TAG 'image'
+  )
+)
+
+# perhaps
+(
+# cache just one
+).cache()
+(
+# cache all its children
+).cacheAll()

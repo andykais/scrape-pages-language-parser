@@ -1,51 +1,60 @@
 # MACROS
-inQuotes[X] -> "'" $X "'" {% quoted => quoted[1][0].join('') %}
+inQuotes[X]     -> "'" $X "'" {% quoted => quoted[1][0].join('') %}
+KeywordArg[Key, Value] -> _ $Key "=" $Value
 
 
 # MAIN
-main -> (comment | scrapeBlock):*
-# main -> comment scrapeBlock
-comment -> "#" [^\n\r]:* NL {% () => "COMMENT" %}
+Main            -> (Comment | nl_):* Program (Comment | nl_):*
 
-# scrapeBlock -> "(" _ "GET" _ ")" WSNL
-scrapeBlock -> "(" NL scrapeBlockMeat:* ")" NL {%
-  steps => ({
-     block: 'scrapeBlock',
-     steps: steps
-     .slice(2, steps.length - 2)[0]
-     .filter(step => step)
-  })
-%}
-scrapeBlockMeat -> (WSNL+ | request | parse) {%
-  steps => 
-     steps
-     .filter(step => step)
-     .map(step => step[0])[0]
-%}
+Program         -> FirstBlock
+                 | Program DotBlock
 
-request -> httpVerb _ url NL {% ([[method], _, url]) => ({
-  method,
-  url
-})%}
-httpVerb -> "GET" | "POST" | "PUT" | "DELETE"
-url -> inQuotes[.:+] {% data => data[0]%}
+FirstBlock      -> Flow
 
-parse -> "PARSE" _ parseStr (_ "ATTR=" attrStr):? NL {%
-  parser => ({
-    command: 'PARSE',
-    selector: parser[2],
-    attr: parser[3]
-  })
-%}
-parseStr -> inQuotes[[^\s]:*] {% data => data[0] %}
-attrStr -> inQuotes[[^\s]:*] {% data => data[0] %}
+DotBlock        -> "." ("map" | "reduce" | "loop") Flow
+                 | ".branch(" FlowList ")"
+
+# Various flows
+FlowList        -> ws Flow ws
+                 | FlowList "," ws Flow ws
+Flow            -> "(" FlowSteps:? ws ")"
+FlowSteps       -> ws FlowStep
+                 | FlowSteps ws FlowStep
+FlowStep        -> Request | Parse | Comment | Input | Tag
+
+
+# COMMANDS
+Input           -> "INPUT" _ Slug
+
+Tag             -> "TAG" _ Slug
+
+Request         -> HttpVerb _ Url
+                   (KeywordArg["READ", Boolean]
+                    | KeywordArg["WRITE", Boolean]):* nl
+HttpVerb        -> "GET" | "POST" | "PUT" | "DELETE"
+Url             -> StringTemplate
+
+Parse           -> "PARSE" _ Selector
+                   (KeywordArg["ATTR", Attribute]
+                    | KeywordArg["MAX", Number]):* nl
+Selector        -> StringTemplate
+Attribute       -> StringTemplate
+
+
+# PRIMITIVES
+StringTemplate  -> inQuotes[[^'\n\r]:*]
+Slug            -> inQuotes[[a-zA-Z0-9-]:*]
+Number          -> [0-9]:+
+Boolean         -> "true" | "false"
+
+
+# COMMENTS
+Comment         -> "#" [^\n\r]:* nl {% () => "COMMENT" %}
+
 
 # Whitespace. The important thing here is that the postprocessor
 # is a null-returning function. This is a memory efficiency trick.
-
-WSNL -> [\s\n\r]:* {% () => null %}
-WSNL+ -> [\s\n\r]:+ {% () => null %}
-# _ -> [\s]:*     {% () => null %}
-_+ -> [\s]:+     {% () => null %}
-_ -> " ":+ {% () => null %}
-NL -> [\n\r] {% () => 'NL'%}
+ws              -> [\s]:* {% () => null %}
+_               -> " ":+ {% () => null %}
+nl              -> [\r\n] {% () => 'nl'%}
+nl_             -> [\r\n] " ":* {% () => 'nl'%}

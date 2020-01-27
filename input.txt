@@ -1,6 +1,17 @@
-# NASA Image of the Day
+# hi
 (
-GET 'url'
+  GET 'url'
+  # ME
+PARSE 'me'
+).map(
 
-PARSE 'xx'
-)
+  ).branch(
+    (
+    GET 'url'
+    ),
+  ()
+  )
+
+  
+# hi
+

@@ -1,0 +1,69 @@
+# MACROS
+inQuotes[X] -> "'" $X "'" {% quoted => quoted[1][0].join('') %}
+
+
+# MAIN
+#main -> (comment | scrapeBlock | NL_):*
+# main -> (comment | NL_):* firstBlock (dotBlock):* (NL_ | comment):*
+main    -> (comment | NL_):* program (comment | NL_):*
+program -> flow
+         | program dotBlock
+# main -> comment scrapeBlock
+insignificant -> (comment | WS):*
+comment -> "#" [^\n\r]:* {% () => "COMMENT" %}
+
+# scrapeBlock -> "(" NL (_star (request | parse | comment) NL):* ")"
+# first block
+# scrapeBlock-> "(" (NL (_star (request | parse | comment)):*):? ")"
+firstBlock -> flow
+# dotBlock -> "." operation flow | ".branch(" (NL " ":* (flow):? ):? (NL " ":* ("," flow):?):*  ")" 
+
+dotBlock -> "." ("map" | "reduce" | "loop") flow
+          | ".branch(" flowList ")"
+
+flowList -> ws flow ws
+          | flowList "," ws flow ws
+flow -> "(" (NL " ":* (request | parse | comment):?):* ")"
+operation -> "map" | "reduce" | "loop"
+# block -> ".map" _star "(" ")"
+#{%
+#  steps =>
+#     steps
+#     .filter(step => step)
+#     .map(step => step[0])[0]
+#%}
+
+request -> httpVerb _ url
+#{% ([[method], _, url]) => ({
+#  method,
+#  url
+#})%}
+httpVerb -> "GET" | "POST" | "PUT" | "DELETE"
+url -> inQuotes[.:+] {% data => data[0]%}
+
+parse -> "PARSE" _ parseStr (_ "ATTR=" attrStr):?
+# {%
+#   parser => ({
+#     command: 'PARSE',
+#     selector: parser[2],
+#     attr: parser[3]
+#   })
+# %}
+parseStr -> inQuotes[[^\s]:*] {% data => data[0] %}
+attrStr -> inQuotes[[^\s]:*] {% data => data[0] %}
+
+# Whitespace. The important thing here is that the postprocessor
+# is a null-returning function. This is a memory efficiency trick.
+
+#WSNL -> [\s\n\r]:* {% () => null %}
+ws -> [\s]:* {% () => null %}
+nl -> [\r\n] {% () => 'nl'%}
+
+WS -> [\s]:+ {% () => null %}
+NL_ -> [\n\r] " ":* {% () => null %}
+WSNL -> [\n\r] [\s]:* {% () => null %}
+WSNL+ -> [\s\n\r]:+ {% () => null %}
+# _ -> [\s]:*     {% () => null %}
+_star -> " ":* {% () => null %}
+_ -> " ":+ {% () => null %}
+NL -> [\n\r] {% () => 'NL'%}

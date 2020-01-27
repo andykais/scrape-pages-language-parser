@@ -7,9 +7,10 @@
   PARSE 'img[src^="image"]' ATTR='src'
   TAG 'post'
 ).map(
-  DOWNLOAD 'https://apod.nasa.gov/apod/{{ value }}'
+  DOWNLOAD 'https://apod.nasa.gov/apod/{{ value }}' WRITE=true READ=false
   TAG 'image'
 )
+
 
 
 # Gallery Post Page
@@ -18,7 +19,7 @@
 ).map(
   GET "http://increment-gallery-site.com/{title}/gallery-page/{{'+' 1 index }}.html"
   PARSE 'li > a' ATTR='href'
-).takeUntil('failed-request').map(
+).takeUntil(FAILED_REQUEST).map(
   GET 'http://increment-gallery-site.com{{ value }}'
   TAG 'image-page'
 ).branch(
@@ -41,7 +42,7 @@
 ).reduce(
   PARSE '#batch-id'
   GET 'http://scrape-next-site.com/batch-id-page/id-{{ value }}.html'
-).map(
+).takeUntil(EMPTY_PARSE).map(
   PARSE 'li > a' ATTR='href'
 ).map(
   GET 'http://scrape-next-site.com{{ value }}'
