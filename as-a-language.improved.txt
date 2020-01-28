@@ -38,53 +38,6 @@
   )
 )
 
-# V2
-# adding commands conditionally inside certain blocks is weird (break on its own is more like programming languages though)
-INPUT 'title'
-().loop(
-  GET "http://increment-gallery-site.com/{title}/gallery-page/{{'+' 1 index }}.html"
-  BREAK IF BAD_REQUEST
-  PARSE 'li > a' ATTR='href' THROW_IF_EMPTY=true
-  BREAK IF EMPTY
-).map(
-  GET 'http://increment-gallery-site.com{{ value }}'
-  TAG 'image-page'
-).branch(
-  (
-    PARSE '#tags > li'
-    TAG 'tag'
-  ),
-  (
-    PARSE 'img' ATTR='src'
-    GET 'http://increment-gallery-site.com{{ value }}' READ=false WRITE=true
-    TAG 'image'
-  )
-)
-
-().loop(
-  GET "http://increment-gallery-site.com/{title}/gallery-page/{{'+' 1 index }}.html"
-  BREAK IF BAD_REQUEST
-  PARSE 'li > a' ATTR='href'
-  BREAK IF EMPTY
-)
-
-().loopUntilFailure(
-  GET "http://increment-gallery-site.com/{title}/gallery-page/{{'+' 1 index }}.html" ALLOW_FAILURES=false
-  PARSE 'li > a' ATTR='href' ALLOW_EMPTY_PARSE=false
-
-  BREAK ON ERROR
-)
-
-().loop(
-  GET "http://increment-gallery-site.com/{title}/gallery-page/{{'+' 1 index }}.html" ALLOW_FAILURES=false
-  PARSE 'li > a' ATTR='href' ALLOW_EMPTY_PARSE=false
-).until(FAILURE)
-
-().loop(
-  GET "http://increment-gallery-site.com/{title}/gallery-page/{{'+' 1 index }}.html" ALLOW_FAILURES=false
-  PARSE 'li > a' ATTR='href' ALLOW_EMPTY_PARSE=false
-).until(index == 5)
-
 
 # Recursive Pages
 (
@@ -107,11 +60,3 @@ INPUT 'title'
     TAG 'image'
   )
 )
-
-# perhaps
-(
-# cache just one
-).cache()
-(
-# cache all its children
-).cacheAll()
