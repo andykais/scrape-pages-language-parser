@@ -38,6 +38,7 @@
   )
 )
 
+
 # V2
 # adding commands conditionally inside certain blocks is weird (break on its own is more like programming languages though)
 INPUT 'title'
@@ -83,8 +84,118 @@ INPUT 'title'
 ().loop(
   GET "http://increment-gallery-site.com/{title}/gallery-page/{{'+' 1 index }}.html" ALLOW_FAILURES=false
   PARSE 'li > a' ATTR='href' ALLOW_EMPTY_PARSE=false
-).until(index == 5)
+  IF index == 5 THEN BREAK
+).allowErrors()
 
+().loop(
+  GET "http://increment-gallery-site.com/{title}/gallery-page/{{'+' 1 index }}.html" ALLOW_FAILURES=false
+  PARSE 'li > a' ATTR='href' ALLOW_EMPTY_PARSE=false
+).catchErrors().takeUntilIndex(5)
+
+# special variables: `index`, `value`, `error`
+# ALLOW_ERROR_CODES will be default false already
+
+().loop(
+  GET "http://increment-gallery-site.com/{title}/gallery-page/{{'+' 1 index }}.html" ALLOW_ERROR_CODES=false
+  PARSE 'li > a' ATTR='href' ALLOW_EMPTY_PARSE=false
+).takeUntil(index == 5 || error)
+
+().loop(
+  GET "http://increment-gallery-site.com/{title}/gallery-page/{{'+' 1 index }}.html" ALLOW_ERROR_CODES=false
+  PARSE 'li > a' ATTR='href' ALLOW_EMPTY_PARSE=false
+  IF index == 5 THEN BREAK
+).catchErrors()
+
+().loop(
+  GET "http://increment-gallery-site.com/{title}/gallery-page/{{'+' 1 index }}.html" ALLOW_ERROR_CODES=false
+  PARSE 'li > a' ATTR='href' ALLOW_EMPTY_PARSE=false
+  IF index == 5 || error THEN BREAK
+)
+
+().loop(
+  try {
+    GET "http://increment-gallery-site.com/{title}/gallery-page/{{'+' 1 index }}.html" ALLOW_ERROR_CODES=false
+    PARSE 'li > a' ATTR='href' ALLOW_EMPTY_PARSE=false
+  } catch {
+    BREAK
+  }
+  IF index == 5 THEN BREAK
+)
+
+().loop(
+  try(
+    GET "http://increment-gallery-site.com/{title}/gallery-page/{{'+' 1 index }}.html" ALLOW_ERROR_CODES=false
+    PARSE 'li > a' ATTR='href' ALLOW_EMPTY_PARSE=false
+  ).catch(
+    BREAK
+  )
+  IF index == 5 THEN BREAK
+)
+
+().loop(
+  GET "http://increment-gallery-site.com/{title}/gallery-page/{{'+' 1 index }}.html" ALLOW_ERROR_CODES=false
+  PARSE 'li > a' ATTR='href' ALLOW_EMPTY_PARSE=false
+  IF index == 5 || error THEN BREAK
+)
+
+().loop(
+  GET "http://increment-gallery-site.com/{title}/gallery-page/{{'+' 1 index }}.html" ON_ERROR_CODE=BREAK
+  PARSE 'li > a' ATTR='href' ON_EMPTY_PARSE=BREAK
+  IF index == 5 THEN BREAK
+)
+
+# maybe we solve the "save a value" problem alongside this problem
+().loop(
+  GET "http://increment-gallery-site.com/{title}/gallery-page/{{'+' 1 index }}.html" ALLOW_ERROR_CODES=false
+  CATCH ERROR THEN BREAK
+  PARSE 'li > a' ATTR='href' ALLOW_EMPTY_PARSE=false
+  IF index == 5 THEN BREAK
+)
+
+().loop(
+  (
+    GET "http://increment-gallery-site.com/{title}/gallery-page/{{'+' 1 index }}.html" ALLOW_ERROR_CODES=false
+    PARSE 'li > a' ATTR='href' ALLOW_EMPTY_PARSE=false
+  ).catch(
+    BREAK
+  )
+  IF index == 5 THEN BREAK
+)
+
+().loop(
+  GET "http://increment-gallery-site.com/{title}/gallery-page/{{'+' 1 index }}.html" ALLOW_ERROR_CODES=false
+  PARSE 'li > a' ATTR='href' ALLOW_EMPTY_PARSE=false
+).until(index == 5).catch()
+
+
+# Auth Flow
+INPUT 'username'
+INPUT 'password'
+(
+  PUT 'http://site.com/auth' {
+    "body": {
+      "username": "{{ username }}",
+      "password": "{{ password }}"
+    }
+  }
+  PARSE '.token' FORMAT=JSON
+  SET value AS 'token'
+  GET 'http://site.com/user' {
+    "headers": { "http-x-auth-token": "{{ token }}" },
+    "body": { "auth_token": "{{ token }}" },
+    "READ": true
+  }
+)
+
+
+# Regex Usage
+INPUT 'username'
+(
+  GET 'https://{{ username }}.tumblr.com'
+  PARSE 'script#data'
+  REPLACE 'var data = ' ''
+  PARSE '.post' FORMAT=JSON
+)
 
 # Recursive Pages
 (

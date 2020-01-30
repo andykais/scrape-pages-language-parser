@@ -2,6 +2,9 @@
 # everything used is a function paramater
 # it raises the question if PARSE needs to explicitly pass {value}
 
+# this actually doesnt work if flow steps can include multiple requests (which they can).
+# `value` will be different at each step
+
 # NASA Image of the Day
 ([value]
   GET https://apod.nasa.gov/apod/archivepix.html
@@ -19,11 +22,10 @@
 
 # Gallery Post Page
 ({ title }
-  ([value, index]
-    INPUT 'title'
-    GET "http://increment-gallery-site.com/{title}/gallery-page/{{'+' 1 index }}.html"
+  ({value, index}
+    GET "http://increment-gallery-site.com/{title}/gallery-page/{{'+' 1 index }}.html" ALLOW_ERROR_CODES=false
     PARSE 'li > a' ATTR='href'
-  ).takeUntil(FAILED_REQUEST).map([value]
+  ).catch().map({value}
     GET 'http://increment-gallery-site.com{{ value }}'
     TAG 'image-page'
   ).branch(
@@ -31,7 +33,7 @@
       PARSE '#tags > li'
       TAG 'tag'
     ),
-    ([value]
+    ({value}
       PARSE 'img' ATTR='src'
       GET 'http://increment-gallery-site.com{{ value }}' READ=false WRITE=true
       TAG 'image'

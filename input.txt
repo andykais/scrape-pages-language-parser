@@ -1,4 +1,5 @@
 # hi
+INPUT 'title'
 (
   GET 'url'
   # ME
@@ -10,7 +11,10 @@ PARSE 'me'
     GET 'url'
     ),
   ()
-  )
+).loop(
+  GET 'url'
+  PARSE '.classname'
+).until(index == 5).catch()
 
   
 # hi
