@@ -218,11 +218,3 @@ INPUT 'username'
     TAG 'image'
   )
 )
-
-# perhaps
-(
-# cache just one
-).cache()
-(
-# cache all its children
-).cacheAll()
