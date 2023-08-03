@@ -1,53 +1,57 @@
+lockfileVersion: '6.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 dependencies:
-  nearley: 2.19.1
-lockfileVersion: 5.1
+  nearley:
+    specifier: ^2.19.1
+    version: 2.19.1
+
 packages:
-  /commander/2.20.3:
+
+  /commander@2.20.3:
+    resolution: {integrity: sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==}
     dev: false
-    resolution:
-      integrity: sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==
-  /discontinuous-range/1.0.0:
+
+  /discontinuous-range@1.0.0:
+    resolution: {integrity: sha1-44Mx8IRLukm5qctxx3FYWqsbxlo=}
     dev: false
-    resolution:
-      integrity: sha1-44Mx8IRLukm5qctxx3FYWqsbxlo=
-  /moo/0.5.1:
+
+  /moo@0.5.1:
+    resolution: {integrity: sha512-I1mnb5xn4fO80BH9BLcF0yLypy2UKl+Cb01Fu0hJRkJjlCRtxZMWkTdAtDd5ZqCOxtCkhmRwyI57vWT+1iZ67w==}
     dev: false
-    resolution:
-      integrity: sha512-I1mnb5xn4fO80BH9BLcF0yLypy2UKl+Cb01Fu0hJRkJjlCRtxZMWkTdAtDd5ZqCOxtCkhmRwyI57vWT+1iZ67w==
-  /nearley/2.19.1:
+
+  /nearley@2.19.1:
+    resolution: {integrity: sha512-xq47GIUGXxU9vQg7g/y1o1xuKnkO7ev4nRWqftmQrLkfnE/FjRqDaGOUakM8XHPn/6pW3bGjU2wgoJyId90rqg==}
+    hasBin: true
     dependencies:
       commander: 2.20.3
       moo: 0.5.1
       railroad-diagrams: 1.0.0
       randexp: 0.4.6
-      semver: 5.7.1
+      semver: 5.7.2
     dev: false
-    hasBin: true
-    resolution:
-      integrity: sha512-xq47GIUGXxU9vQg7g/y1o1xuKnkO7ev4nRWqftmQrLkfnE/FjRqDaGOUakM8XHPn/6pW3bGjU2wgoJyId90rqg==
-  /railroad-diagrams/1.0.0:
+
+  /railroad-diagrams@1.0.0:
+    resolution: {integrity: sha1-635iZ1SN3t+4mcG5Dlc3RVnN234=}
     dev: false
-    resolution:
-      integrity: sha1-635iZ1SN3t+4mcG5Dlc3RVnN234=
-  /randexp/0.4.6:
+
+  /randexp@0.4.6:
+    resolution: {integrity: sha512-80WNmd9DA0tmZrw9qQa62GPPWfuXJknrmVmLcxvq4uZBdYqb1wYoKTmnlGUchvVWe0XiLupYkBoXVOxz3C8DYQ==}
+    engines: {node: '>=0.12'}
     dependencies:
       discontinuous-range: 1.0.0
       ret: 0.1.15
     dev: false
-    engines:
-      node: '>=0.12'
-    resolution:
-      integrity: sha512-80WNmd9DA0tmZrw9qQa62GPPWfuXJknrmVmLcxvq4uZBdYqb1wYoKTmnlGUchvVWe0XiLupYkBoXVOxz3C8DYQ==
-  /ret/0.1.15:
+
+  /ret@0.1.15:
+    resolution: {integrity: sha512-TTlYpa+OL+vMMNG24xSlQGEJ3B/RzEfUlLct7b5G/ytav+wPrplCpVMFuwzXbkecJrb6IYo1iFb0S9v37754mg==}
+    engines: {node: '>=0.12'}
     dev: false
-    engines:
-      node: '>=0.12'
-    resolution:
-      integrity: sha512-TTlYpa+OL+vMMNG24xSlQGEJ3B/RzEfUlLct7b5G/ytav+wPrplCpVMFuwzXbkecJrb6IYo1iFb0S9v37754mg==
-  /semver/5.7.1:
-    dev: false
+
+  /semver@5.7.2:
+    resolution: {integrity: sha512-cBznnQ9KjJqU67B52RMC65CMarK2600WFnbkcaiwWq3xy/5haFJlshgnpjovMVJ+Hff49d8GEn0b87C5pDQ10g==}
     hasBin: true
-    resolution:
-      integrity: sha512-sauaDf/PZdVgrLTNYHRtpXa1iRiKcaebiKQ1BJdpQlWH2lCvexQdX55snPFyK7QzpudqbCI0qXFfOasHdyNDGQ==
-specifiers:
-  nearley: ^2.19.1
+    dev: false
